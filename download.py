@@ -1,12 +1,24 @@
 import os
 
 import pytube
+from tqdm import tqdm
+
+
+def progress_function(stream, chunk, bytes_remaining):
+    progress_bar.update(len(chunk))
 
 
 def download_video(video_id, output_path):
-    youtube = pytube.YouTube(f"https://www.youtube.com/watch?v={video_id}")
+    youtube = pytube.YouTube(
+        f"https://www.youtube.com/watch?v={video_id}",
+        on_progress_callback=progress_function,
+    )
     stream = youtube.streams.get_highest_resolution()
+    total_size = stream.filesize
+    global progress_bar
+    progress_bar = tqdm(total=total_size, unit="B", unit_scale=True, desc="Downloading")
     video_path = stream.download(output_path=output_path, filename=video_id + ".mp4")
+    progress_bar.close()
     return video_path
 
 
