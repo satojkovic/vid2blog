@@ -2,6 +2,7 @@ import os
 
 import pytube
 from tqdm import tqdm
+from youtube_transcript_api import YouTubeTranscriptApi
 
 
 def progress_function(stream, chunk, bytes_remaining):
@@ -40,3 +41,8 @@ if __name__ == "__main__":
         os.makedirs(MERGE_DIR)
 
     video_path = download_video(VIDEO_ID, DATA_DIR)
+
+    # Transcript
+    transcirpt = YouTubeTranscriptApi.get_transcript(VIDEO_ID)
+    print(f"transcript length: {len(transcirpt)}")
+    print(f"{transcirpt[0]}")
