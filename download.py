@@ -4,6 +4,8 @@ import pytube
 from tqdm import tqdm
 from youtube_transcript_api import YouTubeTranscriptApi
 
+from create_chapter import *
+
 
 def progress_function(stream, chunk, bytes_remaining):
     progress_bar.update(len(chunk))
@@ -46,3 +48,7 @@ if __name__ == "__main__":
     transcirpt = YouTubeTranscriptApi.get_transcript(VIDEO_ID)
     print(f"transcript length: {len(transcirpt)}")
     print(f"{transcirpt[0]}")
+
+    # Chop up to chpter
+    chapters_list = chapters_to_list(CHAPTERS_24)
+    chop_up_in_chapters(chapters_list, video_path, transcirpt, CHAPTERS_DIR)

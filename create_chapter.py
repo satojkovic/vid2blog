@@ -1,5 +1,7 @@
 import os
 
+import cv2
+
 CHAPTERS_24 = """
 00:00:00 intro: Tokenization, GPT-2 paper, tokenization-related issues
 00:05:50 tokenization by example in a Web UI (tiktokenizer)
@@ -61,9 +63,30 @@ def get_frames_chapter(
     chapter_start_time,
     chapter_end_time,
     output_dir,
-    timestamp_screenshots=None,
+    timestamps_screenshots=None,
 ):
-    pass
+    if timestamps_screenshots is None:
+        sceenshot_interval = int((chapter_end_time - chapter_start_time) / 10)
+        if sceenshot_interval < 60:
+            sceenshot_interval = 60
+        timestamps_screenshots = list(
+            range(chapter_start_time, chapter_end_time, sceenshot_interval)
+        )
+    else:
+        timestamps_screenshots = [int(ts) for ts in timestamps_screenshots]
+
+    video = cv2.VideoCapture(video_path)
+    fps = video.get(cv2.CAP_PROP_FPS)
+
+    for timestamp in timestamps_screenshots:
+        index = int(timestamp * fps)
+        video.set(cv2.CAP_PROP_POS_FRAMES, index)
+        success, frame = video.read()
+        if success:
+            timestamp_str = "{:05d}".format(timestamp)
+            output_path = f"{output_dir}/{timestamp_str}.jpg"
+            cv2.imwrite(output_path, frame)
+    video.release()
 
 
 def chop_up_in_chapters(
