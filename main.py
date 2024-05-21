@@ -1,9 +1,10 @@
 import base64
 import glob
 import os
+import re
 from pathlib import Path
 
-import anthropic
+import openai
 import pytube
 from tqdm import tqdm
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -45,13 +46,9 @@ def get_screenshots_as_messages(screenshots):
                     "text": f"The timestamp for the following image is {Path(screenshot).stem}",
                 },
                 {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": "image/jpeg",
-                        "data": base64.b64encode(open(screenshot, "rb").read()).decode(
-                            "utf-8"
-                        ),
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64, {base64.b64encode(open(screenshot, 'rb').read()).decode('utf-8')}",
                     },
                 },
             ]
@@ -69,11 +66,14 @@ def get_prompt_as_messages(chapter_id, chapters_dir):
     screenshots_as_messagges = get_screenshots_as_messages(screenshots)
     prompt_as_messages = [
         {
+            "role": "system",
+            "content": prompt_instructions,
+        },
+        {
             "role": "user",
             "content": screenshots_as_messagges
             + [{"type": "text", "text": f"<transcript>\n{transcript}\n</transcript>"}],
         },
-        {"role": "assistant", "content": [{"type": "text", "text": "#"}]},
     ]
 
     return prompt_as_messages
@@ -107,8 +107,8 @@ if __name__ == "__main__":
     chapters_list = chapters_to_list(CHAPTERS_24)
     chop_up_in_chapters(chapters_list, video_path, transcirpt, CHAPTERS_DIR)
 
-    # Call Claude API
-    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    # OpenAI client
+    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     for chapter in range(len(chapters_list) - 1):
         print(f"Processing chunk {chapter}")
@@ -117,17 +117,16 @@ if __name__ == "__main__":
         prompt_generete_markdown = get_prompt_as_messages(chapter, CHAPTERS_DIR)
 
         # Create a message by invoking Claude with the prompt
-        message = client.messages.create(
-            model="claude-3-opus-20240229",
-            system="You are an expert at writing markdown blog post.",
+        message = client.chat.completions.create(
+            model="gpt-4o",
             temperature=0,
             max_tokens=4000,
             messages=prompt_generete_markdown,
         )
 
         # Extract the generated markdown content from the response
-        answer = message.content[0].text
-        markdown = "#" + answer
+        answer = message.choices[0].message.content
+        markdown = "# " + answer
 
         # Define the path for the markdown file corresponding to the current chapter
         markdown_file = os.path.join(CHAPTERS_DIR, str(chapter), "markdown.md")
@@ -135,3 +134,41 @@ if __name__ == "__main__":
         # Write the generated markdown content to the file
         with open(markdown_file, "w") as f:
             f.write(markdown)
+
+    #
+    # Post processing
+    #
+    merged_markdown = ""
+
+    for chapter in range(len(chapters_list) - 1):
+        markdown_file = os.path.join(CHAPTERS_DIR, str(chapter), "markdown.md")
+        with open(markdown_file, "r") as f:
+            markdown = f.readlines()
+        # Let us add, for each chapter title, a hyperlink to the video at the right timestamp
+        url_chapter = f"https://www.youtube.com/watch?v={VIDEO_ID}&t={chapters_list[chapter]['timestamp']}s"
+        markdown[0] = f"# [{chapter + 1}) {markdown[0][2:].strip()}]({url_chapter})]"
+        markdown = "\n".join(markdown)
+
+        merged_markdown += "\n" + markdown
+
+    # Find all <img> tags with timestamps in the src attribute, so we can add a hyperlink to the video at the right timestamp
+    timestamps_screenshots = re.findall(r'<img src="(\d+)\.jpg"/>', merged_markdown)
+    timestamps_screenshots = [timestamp for timestamp in timestamps_screenshots]
+
+    # Add a hyperlink to the video at the right timestamp for each image
+    for timestamp in timestamps_screenshots:
+        video_link = f'<a href="https://www.youtube.com/watch?v={VIDEO_ID}&t={int(timestamp)}s">Link to video</a>'
+        merged_markdown = merged_markdown.replace(
+            f'<img src="{timestamp}.jpg"/>',
+            f'<img src="{timestamp}.jpg"/>\n\n{video_link}',
+        )
+
+    # Get frames based on screenshots effectively selected in the merged markdown and save in merge folder
+    get_frames_chapter(
+        video_path, None, None, MERGE_DIR, timestamps_screenshots=timestamps_screenshots
+    )
+
+    # Save the merged markdown to a markdown blogpost.md file
+    markdown_file = os.path.join(MERGE_DIR, "blogpost.md")
+    with open(markdown_file, "w") as f:
+        f.write(merged_markdown)
