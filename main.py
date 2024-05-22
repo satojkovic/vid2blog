@@ -146,7 +146,7 @@ if __name__ == "__main__":
             markdown = f.readlines()
         # Let us add, for each chapter title, a hyperlink to the video at the right timestamp
         url_chapter = f"https://www.youtube.com/watch?v={VIDEO_ID}&t={chapters_list[chapter]['timestamp']}s"
-        markdown[0] = f"# [{chapter + 1}) {markdown[0][2:].strip()}]({url_chapter})]"
+        markdown[0] = f"# [{chapter + 1}) {markdown[0][2:].strip()}]({url_chapter})"
         markdown = "\n".join(markdown)
 
         merged_markdown += "\n" + markdown
