@@ -99,13 +99,13 @@ if __name__ == "__main__":
     video_path = download_video(VIDEO_ID, DATA_DIR)
 
     # Transcript
-    transcirpt = YouTubeTranscriptApi.get_transcript(VIDEO_ID)
-    print(f"transcript length: {len(transcirpt)}")
-    print(f"{transcirpt[0]}")
+    transcript = YouTubeTranscriptApi.get_transcript(VIDEO_ID)
+    print(f"transcript length: {len(transcript)}")
+    print(f"{transcript[0]}")
 
     # Chop up to chpter
     chapters_list = chapters_to_list(CHAPTERS_24)
-    chop_up_in_chapters(chapters_list, video_path, transcirpt, CHAPTERS_DIR)
+    chop_up_in_chapters(chapters_list, video_path, transcript, CHAPTERS_DIR)
 
     # OpenAI client
     client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
