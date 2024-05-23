@@ -18,14 +18,14 @@ def chapters_to_list(chapters):
 
 def get_text_chapter(transcript, chapter_start_time, chapter_end_time, output_dir):
     text_chapter = ""
-    for i in range(len(transcript)):
-        transcript_i = transcript[i]
+    for ts in transcript:
+        transcript_i = ts
 
-    if (
-        int(transcript_i["start"]) >= chapter_start_time
-        and int(transcript_i["start"]) <= chapter_end_time
-    ):
-        text_chapter += transcript_i["text"].replace("\n", "").strip() + " "
+        if (
+            int(transcript_i["start"]) >= chapter_start_time
+            and int(transcript_i["start"]) <= chapter_end_time
+        ):
+            text_chapter += transcript_i["text"].replace("\n", "").strip() + " "
 
     transcript_file = os.path.join(output_dir, "transcript.txt")
     with open(transcript_file, "w") as f:
