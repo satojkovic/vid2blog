@@ -96,7 +96,9 @@ if __name__ == "__main__":
     if not os.path.exists(MERGE_DIR):
         os.makedirs(MERGE_DIR)
 
-    video_path = download_video(VIDEO_ID, DATA_DIR)
+    video_path = os.path.join(DATA_DIR, f"{VIDEO_ID}.mp4")
+    if not os.path.exists(video_path):
+        video_path = download_video(VIDEO_ID, DATA_DIR)
 
     # Transcript
     transcript = YouTubeTranscriptApi.get_transcript(VIDEO_ID)
