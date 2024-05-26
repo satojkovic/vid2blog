@@ -154,7 +154,7 @@ if __name__ == "__main__":
         merged_markdown += "\n" + markdown
 
     # Find all <img> tags with timestamps in the src attribute, so we can add a hyperlink to the video at the right timestamp
-    timestamps_screenshots = re.findall(r'<img src="(\d+)\.jpg"/>', merged_markdown)
+    timestamps_screenshots = re.findall(r'<img src="(\d+)\.jpg"[^>]*>', merged_markdown)
     timestamps_screenshots = [timestamp for timestamp in timestamps_screenshots]
 
     # Add a hyperlink to the video at the right timestamp for each image
