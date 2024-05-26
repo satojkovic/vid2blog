@@ -127,8 +127,7 @@ if __name__ == "__main__":
         )
 
         # Extract the generated markdown content from the response
-        answer = message.choices[0].message.content
-        markdown = "# " + answer
+        markdown = message.choices[0].message.content
 
         # Define the path for the markdown file corresponding to the current chapter
         markdown_file = os.path.join(CHAPTERS_DIR, str(chapter), "markdown.md")
