@@ -122,7 +122,7 @@ if __name__ == "__main__":
         message = client.chat.completions.create(
             model="gpt-4o",
             temperature=0,
-            max_tokens=4000,
+            max_tokens=4096,
             messages=prompt_generete_markdown,
         )
 
