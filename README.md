@@ -1,4 +1,4 @@
-# Video2BlogPost: GPT-4 Powered YouTube to Markdown Blog Converter
+# vid2blog: GPT-4o Powered YouTube to Markdown Blog Converter
 
 This repository builds upon [Yannael's Claude 3 based project](https://github.com/Yannael/video2blogpost), leveraging the power of OpenAI's GPT-4o to transform YouTube video tutorials into comprehensive Markdown blog posts.
 
