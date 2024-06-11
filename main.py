@@ -1,3 +1,4 @@
+import argparse
 import base64
 import glob
 import os
@@ -80,8 +81,11 @@ def get_prompt_as_messages(chapter_id, chapters_dir):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--video_id", required=True, help="Youtube Video ID.")
+    args = parser.parse_args()
     # Andrej Karpathy : Let's build the GPT Tokenizer - https://www.youtube.com/watch?v=zduSFxRajkE
-    VIDEO_ID = "zduSFxRajkE"
+    VIDEO_ID = args.video_id  # "zduSFxRajkE"
 
     DATA_DIR = VIDEO_ID
     CHAPTERS_DIR = os.path.join(DATA_DIR, "chapters")
