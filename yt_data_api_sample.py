@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -7,6 +8,16 @@ from googleapiclient.errors import HttpError
 DEVELOPER_KEY = os.environ["DEVELOPER_KEY"]
 YOUTUBE_API_SERVICE = "youtube"
 YOUTUBE_API_VERSION = "v3"
+
+
+def extract_chapters_from_description(description):
+    # 正規表現パターンの定義
+    pattern = re.compile(r"(\d{2}:\d{2}:\d{2}) (.+)")
+
+    # マッチ結果をリストに格納
+    chapters = pattern.findall(description)
+
+    return chapters
 
 
 def youtube_search(args):
@@ -25,9 +36,11 @@ def youtube_search(args):
     )
 
     for resp in response.get("items", []):
-        print(resp["snippet"]["title"])
-        print(resp["snippet"]["channelTitle"])
-        print(resp["snippet"]["description"])
+        title = resp["snippet"]["title"]
+        channelTitle = resp["snippet"]["channelTitle"]
+        description = resp["snippet"]["description"]
+        chapters = extract_chapters_from_description(description)
+        print("\n".join([f"{time} {text}" for time, text in chapters]))
 
 
 if __name__ == "__main__":
