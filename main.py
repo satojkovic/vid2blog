@@ -157,7 +157,7 @@ if __name__ == "__main__":
     # OpenAI client
     client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    for chapter in range(len(chapters_list) - 1):
+    for chapter in range(len(chapters_list)):
         print(f"Processing chunk {chapter}")
 
         # Generate the prompt for the current chapter
@@ -186,13 +186,13 @@ if __name__ == "__main__":
     #
     merged_markdown = ""
 
-    for chapter in range(len(chapters_list) - 1):
-        markdown_file = os.path.join(CHAPTERS_DIR, str(chapter), "markdown.md")
+    for i, _ in enumerate(chapters_list):
+        markdown_file = os.path.join(CHAPTERS_DIR, str(i), "markdown.md")
         with open(markdown_file, "r") as f:
             markdown = f.readlines()
         # Let us add, for each chapter title, a hyperlink to the video at the right timestamp
-        url_chapter = f"https://www.youtube.com/watch?v={VIDEO_ID}&t={chapters_list[chapter]['timestamp']}s"
-        markdown[0] = f"# [{chapter + 1}) {markdown[0][2:].strip()}]({url_chapter})"
+        url_chapter = f"https://www.youtube.com/watch?v={VIDEO_ID}&t={chapters_list[i]['timestamp']}s"
+        markdown[0] = f"# [{i + 1}) {markdown[0][2:].strip()}]({url_chapter})"
         markdown = "\n".join(markdown)
 
         merged_markdown += "\n" + markdown
