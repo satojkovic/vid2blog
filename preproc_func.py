@@ -73,7 +73,7 @@ def chop_up_in_chapters(
     n_chapters = len(chapters_list)
     print(f"Number of chunks: {n_chapters}")
 
-    for current_chapter in range(n_chapters):
+    for current_chapter in range(0, n_chapters - 1):
         output_dir = os.path.join(chapters_dir, str(current_chapter))
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
