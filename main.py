@@ -148,7 +148,7 @@ if __name__ == "__main__":
     # Extract chapters from the description
     chapters = extract_chapters_from_description(description)
     chapters_text = "\n".join([f"{time} {text}" for time, text in chapters])
-    print(f"chapters: {chapters_text}")
+    print(f"chapters:\n{chapters_text}")
 
     # Chop up to chpter
     chapters_list = chapters_to_list(chapters_text)

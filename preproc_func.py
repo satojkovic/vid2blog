@@ -70,7 +70,7 @@ def chop_up_in_chapters(
     chapters_dir,
     timestamps_screenshots_list_seconds=None,
 ):
-    n_chapters = len(chapters_list) - 1
+    n_chapters = len(chapters_list)
     print(f"Number of chunks: {n_chapters}")
 
     for current_chapter in range(n_chapters):
