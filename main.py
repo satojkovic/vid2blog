@@ -7,11 +7,17 @@ from pathlib import Path
 
 import openai
 import pytube
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from tqdm import tqdm
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from config import *
 from preproc_func import *
+
+DEVELOPER_KEY = os.environ["DEVELOPER_KEY"]
+YOUTUBE_API_SERVICE = "youtube"
+YOUTUBE_API_VERSION = "v3"
 
 
 def progress_function(stream, chunk, bytes_remaining):
@@ -80,6 +86,34 @@ def get_prompt_as_messages(chapter_id, chapters_dir):
     return prompt_as_messages
 
 
+def extract_chapters_from_description(description):
+    # hh:mm:ss text
+    pattern = re.compile(r"(\d{2}:\d{2}:\d{2}) (.+)")
+    chapters = pattern.findall(description)
+    return chapters
+
+
+def youtube_search(video_id):
+    youtube = build(
+        YOUTUBE_API_SERVICE, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY
+    )
+
+    # Call the videos.list
+    response = (
+        youtube.videos()
+        .list(
+            id=video_id,
+            part="snippet,contentDetails",
+        )
+        .execute()
+    )
+
+    for resp in response.get("items", []):
+        description = resp["snippet"]["description"]
+
+    return description
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--video_id", required=True, help="Youtube Video ID.")
@@ -109,8 +143,15 @@ if __name__ == "__main__":
     print(f"transcript length: {len(transcript)}")
     print(f"{transcript[0]}")
 
+    # Use the YouTube Data API to retrieve the description
+    description = youtube_search(args.video_id)
+    # Extract chapters from the description
+    chapters = extract_chapters_from_description(description)
+    chapters_text = "\n".join([f"{time} {text}" for time, text in chapters])
+    print(f"chapters: {chapters_text}")
+
     # Chop up to chpter
-    chapters_list = chapters_to_list(CHAPTERS_24)
+    chapters_list = chapters_to_list(chapters_text)
     chop_up_in_chapters(chapters_list, video_path, transcript, CHAPTERS_DIR)
 
     # OpenAI client
